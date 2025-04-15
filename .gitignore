@@ -1,0 +1,20 @@
+# Arduino ビルドファイル
+*.hex
+*.bin
+*.elf
+
+# オブジェクトファイル
+*.o
+*.d
+
+# ビルドフォルダ（例: platformio など使用する場合）
+/build
+
+# 一時ファイル
+*.tmp
+
+# macOS のシステムファイル
+.DS_Store
+
+# VSCode 設定（もし使う場合）
+.vscode/
