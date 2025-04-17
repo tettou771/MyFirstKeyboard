@@ -49,6 +49,10 @@ void KeyObject::onKeyReleased() {
   Keyboard.release(activeKey);
   activeKey = 0;
 }
+// Retrieve assigned key
+keyCode KeyObject::getAssignedKey() const {
+  return assignedKey;
+}
 
 KeyManager::KeyManager(const int pins[], int numPins) : size(numPins) {
   keys = new KeyObject[size];
@@ -77,4 +81,11 @@ void KeyManager::update() {
   for (int i = 0; i < size; i++) {
     keys[i].update();
   }
+}
+// Retrieve current key mapping for index
+keyCode KeyManager::getKey(int index) const {
+  if (index >= 0 && index < size) {
+    return keys[index].getAssignedKey();
+  }
+  return 0;
 }

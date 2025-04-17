@@ -18,6 +18,20 @@
 
 - シリアルコマンドでキーの設定変更
 
+## Key Remap Tool (ブラウザUI)
+`KeyRemapTool` フォルダに、Web Serial API を使ったキーリマップ用のブラウザツールを同梱しています。
+- 必要条件: Web Serial API 対応ブラウザ（Chrome, Edge 等）
+- サーバ起動例:
+  ```bash
+  cd KeyRemapTool
+  python3 -m http.server 8000
+  ```
+- ブラウザで `http://localhost:8000` を開き、以下を操作します。
+  1. [Connect] ボタンで XIAO と接続
+  2. [Refresh] ボタンで現在のマッピングを取得
+  3. ドロップダウンから各キーを選択（`Random` でランダムモード）
+  4. [Apply] ボタンで設定を送信・フラッシュに保存
+
 ## ライセンス
 
 MIT

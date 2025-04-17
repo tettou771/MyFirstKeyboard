@@ -15,6 +15,8 @@ public:
   
   void setKey(keyCode code);
   void setRandomKeys(keyCode codes[], int count);
+  // Retrieve assigned key for persistence or querying
+  keyCode getAssignedKey() const;
   
 private:
   int pin;
@@ -40,6 +42,8 @@ public:
   
   void setKey(int index, keyCode code);
   void setRandomKeys(int index, keyCode codes[], int count);
+  // Retrieve current key mapping
+  keyCode getKey(int index) const;
   
 private:
   int size;
