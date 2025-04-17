@@ -18,3 +18,5 @@
 
 # VSCode 設定（もし使う場合）
 .vscode/
+
+ofxSerialManager

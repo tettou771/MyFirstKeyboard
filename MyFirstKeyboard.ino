@@ -14,10 +14,10 @@ void setup() {
   // キーの初期設定
   keyManager.setKey(0, KEY_RETURN); // key 0: enter
   keyManager.setKey(1, ' ');          // key 1: space
-  keyManager.setKey(2, 'r');          // key 2: r
-  keyManager.setKey(3, 'i');          // key 3: i
-  keyManager.setKey(4, 't');          // key 4: t
-  keyManager.setKey(5, 'o');          // key 5: o
+  keyManager.setKey(2, 't');          // key 2: 
+  keyManager.setKey(3, 'o');          // key 3: 
+  keyManager.setKey(4, 'r');          // key 4: 
+  keyManager.setKey(5, 'u');          // key 5: 
   
   // key 6: ランダムキー：'!' と '?' をランダムで送信
   keyCode randomKeys[2] = {'!', '?'};
