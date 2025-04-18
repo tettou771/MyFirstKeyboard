@@ -4,36 +4,74 @@
   <meta charset="UTF-8">
   <title>Key Remap Tool</title>
   <style>
+    :root {
+      --key-size: 80px;
+      --gap: 12px;
+    }
     body { font-family: 'Helvetica', sans-serif; background: #FFFBF0; color: #333; text-align: center; }
-    table { margin: auto; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 0.5em 1em; }
-    th { background: #F7D6E0; }
-    td { background: #FFF; }
-    button { background: #F7A8B8; color: white; font-size: 1em; padding: 0.5em 1em;
-             border: none; border-radius: 0.5em; cursor: pointer; margin: 0.5em; }
+    button { background: #F7A8B8; color: white; font-size: 1em;
+             padding: 0.6em 1em;
+             border: none; border-radius: 0.5em; cursor: pointer;
+             margin: var(--gap);
+             /* increase vertical size by 1.2x */ }
     button:disabled { background: #DDD; cursor: not-allowed; }
-    select { padding: 0.5em; margin: 0.2em; border-radius: 0.3em; border: 1px solid #ccc; }
+    select { padding: 0.5em; border-radius: 0.3em; border: 1px solid #ccc; }
+    /* Container for key rows (frame) */
+    #layout {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      align-items: center;
+      margin: var(--gap) auto;
+      border: 2px solid #CCC;
+      padding: var(--gap);
+      border-radius: 0.5em;
+      background: #FFF;
+      /* fixed width: 5 keys + 4 gaps */
+      width: calc(5 * var(--key-size) + 4 * var(--gap));
+    }
+    .row {
+      display: flex;
+      gap: var(--gap);
+    }
+    .key {
+      width: var(--key-size);
+      height: var(--key-size);
+      background: #FFF;
+      border: 1px solid #ccc;
+      border-radius: 0.3em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .key label {
+      margin-bottom: 0.3em;
+      font-weight: bold;
+    }
+    /* Bottom-row keys double width */
+    #wrap-1, #wrap-0 {
+      width: calc(var(--key-size) * 2 + var(--gap));
+    }
   </style>
 </head>
 <body>
   <h1>Key Remap Tool</h1>
   <button id="connect">Connect</button>
   <button id="refresh" disabled>Refresh Mapping</button>
-  <table>
-    <thead>
-      <tr><th>Key Index</th><th>Mapping</th></tr>
-    </thead>
-    <tbody>
-      <!-- 各キーに対し単一選択 + Random オプション -->
-      <tr><td>0</td><td><select id="key-0"></select></td></tr>
-      <tr><td>1</td><td><select id="key-1"></select></td></tr>
-      <tr><td>2</td><td><select id="key-2"></select></td></tr>
-      <tr><td>3</td><td><select id="key-3"></select></td></tr>
-      <tr><td>4</td><td><select id="key-4"></select></td></tr>
-      <tr><td>5</td><td><select id="key-5"></select></td></tr>
-      <tr><td>6</td><td><select id="key-6"></select></td></tr>
-    </tbody>
-  </table>
+  <div id="layout">
+    <div class="row row-top">
+      <div class="key" id="wrap-2"><label>2</label><select id="key-2"></select></div>
+      <div class="key" id="wrap-3"><label>3</label><select id="key-3"></select></div>
+      <div class="key" id="wrap-4"><label>4</label><select id="key-4"></select></div>
+      <div class="key" id="wrap-5"><label>5</label><select id="key-5"></select></div>
+      <div class="key" id="wrap-6"><label>6</label><select id="key-6"></select></div>
+    </div>
+    <div class="row row-bottom">
+      <div class="key" id="wrap-1"><label>1</label><select id="key-1"></select></div>
+      <div class="key" id="wrap-0"><label>0</label><select id="key-0"></select></div>
+    </div>
+  </div>
   <button id="apply" disabled>Apply</button>
   <script src="script.js"></script>
 </body>
