@@ -1,6 +1,7 @@
 #include "KeyManager.h"
 #include <Keyboard.h>
 #include <ofxSerialManager.h>
+#include <stdlib.h>
 
 // Forward declaration for keyManager defined later
 extern KeyManager keyManager;
@@ -22,7 +23,8 @@ FlashStorage(my_flash_store, KeyMap);
 
 // Initialize flash mapping with defaults if needed
 void initFlashMapping() {
-  KeyMap km = my_flash_store.read();
+  KeyMap km;
+  my_flash_store.read(km);
   if (km.magic != KEYMAP_MAGIC) {
     km.magic = KEYMAP_MAGIC;
     for (int i = 0; i < MAX_KEYS; i++) {
@@ -47,7 +49,8 @@ void initFlashMapping() {
 
 // Write single key mapping to flash
 void writeSingleMapping(int index, keyCode code) {
-  KeyMap km = my_flash_store.read();
+  KeyMap km;
+  my_flash_store.read(km);
   km.isRandom[index] = 0;
   km.counts[index] = 1;
   km.codes[index][0] = code;
@@ -56,7 +59,8 @@ void writeSingleMapping(int index, keyCode code) {
 
 // Write random key mapping to flash
 void writeRandomMapping(int index, keyCode arr[], int count) {
-  KeyMap km = my_flash_store.read();
+  KeyMap km;
+  my_flash_store.read(km);
   km.isRandom[index] = 1;
   km.counts[index] = count;
   for (int j = 0; j < count && j < MAX_RANDOM; j++) {
@@ -67,7 +71,8 @@ void writeRandomMapping(int index, keyCode arr[], int count) {
 
 // getコマンドのコールバック (JSON形式で返す)
 void onGetKeyCommand(const char* payload, int length) {
-  KeyMap km = my_flash_store.read();
+  KeyMap km;
+  my_flash_store.read(km);
   String resp = "{";
   for (int i = 0; i < MAX_KEYS; i++) {
     if (i) resp += ",";
@@ -96,7 +101,11 @@ void onSetKeyCommand(const char* payload, int length) {
   keyCode keys[MAX_RANDOM];
   int keyCount = 0;
   while ((token = strtok(NULL, " ")) && keyCount < MAX_RANDOM) {
-    keys[keyCount++] = (keyCode)token[0];
+    // トークンを16進文字列とみなし、UTF-32コードポイントとしてパース
+    char* s = token;
+    if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) s += 2;
+    uint32_t code = strtoul(s, NULL, 16);
+    keys[keyCount++] = code;
   }
   if (keyCount == 1) {
     keyManager.setKey(index, keys[0]);
@@ -130,7 +139,8 @@ void setup() {
   // Initialize and load mapping from flash
   initFlashMapping();
   {
-    KeyMap km = my_flash_store.read();
+    KeyMap km;
+    my_flash_store.read(km);
     for (int i = 0; i < MAX_KEYS; i++) {
       if (km.counts[i] > 1) {
         keyManager.setRandomKeys(i, km.codes[i], km.counts[i]);
@@ -142,6 +152,7 @@ void setup() {
 }
 
 void loop() {
+  serialManager.update();
   keyManager.update();
-  delay(10); // 小さな遅延でチャタリング対策
+  delay(1);
 }

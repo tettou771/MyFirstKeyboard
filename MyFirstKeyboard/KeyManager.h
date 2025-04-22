@@ -4,8 +4,8 @@
 #include <Arduino.h>
 #include <Keyboard.h>
 
-// キーコードをintとして定義（Keyboard.write()はintを受け取る）
-typedef int keyCode;
+// キーコードをuint8_tとして定義（16進テキストで表現）
+typedef uint8_t keyCode;
 
 class KeyObject {
 public:
@@ -26,7 +26,7 @@ private:
   
   bool lastReading;
   unsigned long lastDebounceTime;
-  const unsigned long debounceDelay = 50; // 50msデバウンス
+  const unsigned long debounceDelay = 30; // 30msデバウンス
   void onKeyPressed();
   void onKeyReleased();
   keyCode activeKey;

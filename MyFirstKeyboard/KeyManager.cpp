@@ -35,6 +35,27 @@ void KeyObject::update() {
   lastReading = reading;
 }
 
+// UTF-32をUTF-8にエンコードするヘルパー関数を追加
+static int utf8_encode(uint32_t cp, uint8_t *out) {
+  if (cp <= 0x7F) { out[0] = cp; return 1; }
+  if (cp <= 0x7FF) {
+    out[0] = 0xC0 | (cp >> 6);
+    out[1] = 0x80 | (cp & 0x3F);
+    return 2;
+  }
+  if (cp <= 0xFFFF) {
+    out[0] = 0xE0 | (cp >> 12);
+    out[1] = 0x80 | ((cp >> 6) & 0x3F);
+    out[2] = 0x80 | (cp & 0x3F);
+    return 3;
+  }
+  out[0] = 0xF0 | (cp >> 18);
+  out[1] = 0x80 | ((cp >> 12) & 0x3F);
+  out[2] = 0x80 | ((cp >> 6) & 0x3F);
+  out[3] = 0x80 | (cp & 0x3F);
+  return 4;
+}
+
 void KeyObject::onKeyPressed() {
   if (randomKeyCount > 0) {
     int randIndex = random(randomKeyCount);
@@ -42,11 +63,29 @@ void KeyObject::onKeyPressed() {
   } else {
     activeKey = assignedKey;
   }
-  Keyboard.press(activeKey);
+  // Appleロゴ(0x00)用の特殊処理: Shift+Alt+'k'
+  if (activeKey == 0x00) {
+    Keyboard.press(KEY_LEFT_SHIFT);
+    Keyboard.press(KEY_LEFT_ALT);
+    Keyboard.press('k');
+  }
+  // 通常キー(1バイト)は press/release
+  else if (activeKey <= 0xFF) {
+    Keyboard.press((uint8_t)activeKey);
+  }
 }
 
 void KeyObject::onKeyReleased() {
-  Keyboard.release(activeKey);
+  // Appleロゴ(0x00)は Shift+Alt+'k'をリリース
+  if (activeKey == 0x00) {
+    Keyboard.release(KEY_LEFT_SHIFT);
+    Keyboard.release(KEY_LEFT_ALT);
+    Keyboard.release('k');
+  }
+  // 通常キーは release
+  else if (activeKey <= 0xFF) {
+    Keyboard.release((uint8_t)activeKey);
+  }
   activeKey = 0;
 }
 // Retrieve assigned key
