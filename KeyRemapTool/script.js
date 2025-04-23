@@ -68,7 +68,7 @@ function processLine(line) {
   }
   if (cmd === 'get') {
     // JSON形式: {0:[...],1:[...],...}
-    // Arduino送信時に「:\\」などでエスケープされているので解除
+    // Arduino送信時に「:\」などでエスケープされているので解除
     // Arduino送信時に「\:」でエスケープされたコロンを解除
     let clean = payload.replace(/\\:/g, ':');
     let data;
@@ -80,8 +80,20 @@ function processLine(line) {
     }
     currentMapping = data;
     for (let i = 0; i < 7; i++) {
-      const arr = data[i] || [];
+      const item = data[i];
       const select = document.getElementById(`key-${i}`);
+      const strInput = document.getElementById(`str-${i}`);
+      // 文字列マッピング対応
+      if (item && typeof item.str === 'string') {
+        select.value = '__string';
+        strInput.value = item.str;
+        strInput.style.display = 'block';
+        continue;
+      } else {
+        strInput.style.display = 'none';
+      }
+      const arr = Array.isArray(item) ? item : [];
+      const wrap = document.getElementById(`wrap-${i}`);
       if (arr.length > 1) {
         select.value = '__random';
       } else {
@@ -117,25 +129,41 @@ async function applyMapping() {
   applyBtn.disabled = true;
   // ランダムおよびアップルマーク用のコード配列
   const randomKeyCodes = [0x00, 0x21, 0x3F, 0x40, 0x23, 0x24, 0x25, 0x5E, 0x26, 0x2A, 0x2B, 0x2D, 0x7E];
+  // 文字列モードのキーを保存
+  const stringIndices = [];
   for (let i = 0; i < 7; i++) {
     const select = document.getElementById(`key-${i}`);
+    const wrap = document.getElementById(`wrap-${i}`);
+    // 文字列モードなら setstr を送信し、後で復元
+    if (select.value === '__string') {
+      const str = document.getElementById(`str-${i}`).value;
+      const payload = `${i} ${str}`;
+      await sendCommand('setstr', payload);
+      stringIndices.push(i);
+      continue;
+    }
     let payload;
     if (select.value === '__random') {
-      // ランダムオプション: 定義済みの記号とアップルマークを送信
       const hexs = randomKeyCodes.map(c => c.toString(16).padStart(2, '0').toUpperCase());
       payload = `${i} ${hexs.join(' ')}`;
     } else if (select.value === '__apple') {
-      // アップルマーク（コード0x00）
       payload = `${i} 00`;
     } else {
-      // 単一キー: 文字からASCIIコードを取得し16進表記 (Enter '\r' は 0D)
       const code = select.value.charCodeAt(0);
       const hex = code.toString(16).padStart(2, '0').toUpperCase();
       payload = `${i} ${hex}`;
     }
     await sendCommand('setkey', payload);
   }
+  // 常にリフレッシュして非文字列モードのキーだけ更新
   await refreshMapping();
+  // 文字列モードのキーは再度Str選択と入力欄を表示
+  for (const i of stringIndices) {
+    const select = document.getElementById(`key-${i}`);
+    select.value = '__string';
+    const strInput = document.getElementById(`str-${i}`);
+    strInput.style.display = 'block';
+  }
   // フィードバック: 一時的にボタンを 'Applied!' に変更
   const originalText = applyBtn.textContent;
   applyBtn.textContent = 'Applied!';
@@ -158,6 +186,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const randomKeyCodes = [0x00, 0x21, 0x3F, 0x40, 0x23, 0x24, 0x25, 0x5E, 0x26, 0x2A, 0x2B, 0x2D, 0x7E];
   for (let i = 0; i < 7; i++) {
     const select = document.getElementById(`key-${i}`);
+    const wrap = document.getElementById(`wrap-${i}`);
     // 単一キーオプションを追加
     keyOptions.forEach(opt => {
       const option = document.createElement('option');
@@ -175,7 +204,23 @@ window.addEventListener('DOMContentLoaded', () => {
     randOpt.textContent = 'Rnd';
     randOpt.value = '__random';
     select.appendChild(randOpt);
-
+    // 文字列オプションを追加
+    const strOpt = document.createElement('option');
+    strOpt.textContent = 'Str';
+    strOpt.value = '__string';
+    select.appendChild(strOpt);
+    // 文字列入力欄を追加
+    const strInput = document.createElement('input');
+    strInput.type = 'text';
+    strInput.id = `str-${i}`;
+    strInput.placeholder = '文字列';
+    strInput.style.display = 'none';
+    wrap.appendChild(strInput);
+    // 選択変更時の表示切替
+    select.addEventListener('change', () => {
+      if (select.value === '__string') strInput.style.display = 'block';
+      else strInput.style.display = 'none';
+    });
     // ↓ここから：読み込み時のデフォルト選択をセット
     if (i === 0) select.value = String.fromCharCode(0xB0);    // Enter (0xB0)
     else if (i === 1) select.value = ' '; // Space

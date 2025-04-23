@@ -2,6 +2,7 @@
 #include <Keyboard.h>
 #include <ofxSerialManager.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Forward declaration for keyManager defined later
 extern KeyManager keyManager;
@@ -76,14 +77,25 @@ void onGetKeyCommand(const char* payload, int length) {
   String resp = "{";
   for (int i = 0; i < MAX_KEYS; i++) {
     if (i) resp += ",";
-    resp += "\"" + String(i) + "\":[";
-    int cnt = (km.magic == KEYMAP_MAGIC ? km.counts[i] : 1);
-    for (int j = 0; j < cnt; j++) {
-      if (j) resp += ",";
-      keyCode c = (km.magic == KEYMAP_MAGIC ? km.codes[i][j] : keyManager.getKey(i));
-      resp += String(c);
+    // 文字列マッピングが設定されていればstrフィールドで返す
+    if (keyManager.isStringMappingEnabled(i)) {
+      resp += "\"" + String(i) + "\":{\"str\":\"" + String(keyManager.getStringMapping(i)) + "\"}";
+    } else {
+      // 通常キーコードまたはランダムキーを配列で返す
+      bool isRand = (km.magic == KEYMAP_MAGIC ? km.isRandom[i] : false);
+      int cnt = (km.magic == KEYMAP_MAGIC ? km.counts[i] : 1);
+      resp += "\"" + String(i) + "\": [";
+      if (isRand) {
+        for (int j = 0; j < cnt; j++) {
+          if (j) resp += ",";
+          resp += String(km.codes[i][j]);
+        }
+      } else {
+        keyCode c = (km.magic == KEYMAP_MAGIC ? km.codes[i][0] : keyManager.getKey(i));
+        resp += String(c);
+      }
+      resp += "]";
     }
-    resp += "]";
   }
   resp += "}";
   serialManager.send("get", resp.c_str());
@@ -119,6 +131,20 @@ void onSetKeyCommand(const char* payload, int length) {
   serialManager.send("setkey", "ok");
 }
 
+// setstrコマンドのコールバック
+void onSetStrCommand(const char* payload, int length) {
+  char buf[128];
+  int len = length < 127 ? length : 127;
+  memcpy(buf, payload, len);
+  buf[len] = '\0';
+  char* token = strtok(buf, " ");
+  if (!token) return;
+  int index = atoi(token);
+  char* str = buf + strlen(token) + 1;
+  keyManager.setStringMapping(index, str);
+  serialManager.send("setstr", "ok");
+}
+
 // Seeeduino XIAO M0用カスタムキーボード
 // 接続ピン順: A7, A6, A1, A9, A10, A8, A2
 const int keyPins[7] = {A7, A6, A1, A9, A10, A8, A2};
@@ -135,6 +161,7 @@ void setup() {
   serialManager.setup(&Serial);
   serialManager.addListener("setkey", onSetKeyCommand);
   serialManager.addListener("get", onGetKeyCommand);
+  serialManager.addListener("setstr", onSetStrCommand);
   
   // Initialize and load mapping from flash
   initFlashMapping();

@@ -1,8 +1,10 @@
 #include "KeyManager.h"
 
 KeyObject::KeyObject()
-    : pin(-1), assignedKey(0), randomKeyArray(NULL), randomKeyCount(0),
-      lastReading(HIGH), lastDebounceTime(0) {}
+    : pin(-1), assignedKey(0), randomKeyArray(NULL), randomKeyCount(0), isString(false),
+      lastReading(HIGH), lastDebounceTime(0) {
+  strMapping[0] = '\0';
+}
 
 void KeyObject::init(int p) {
   pin = p;
@@ -11,13 +13,26 @@ void KeyObject::init(int p) {
 }
 
 void KeyObject::setKey(keyCode code) {
+  isString = false; // 文字列マッピングを解除
   assignedKey = code;
   randomKeyCount = 0; // 通常キーの場合
 }
 
 void KeyObject::setRandomKeys(keyCode codes[], int count) {
+  isString = false; // 文字列マッピングを解除
   randomKeyArray = codes;
   randomKeyCount = count;
+}
+
+void KeyObject::setStringMapping(const char* s) {
+  isString = true;
+  randomKeyCount = 0;
+  strncpy(strMapping, s, MAX_STR_LEN - 1);
+  strMapping[MAX_STR_LEN - 1] = '\0';
+}
+
+bool KeyObject::isStringMappingEnabled() const {
+  return isString;
 }
 
 void KeyObject::update() {
@@ -57,6 +72,10 @@ static int utf8_encode(uint32_t cp, uint8_t *out) {
 }
 
 void KeyObject::onKeyPressed() {
+  if (isString) {
+    Keyboard.print(strMapping);
+    return;
+  }
   if (randomKeyCount > 0) {
     int randIndex = random(randomKeyCount);
     activeKey = randomKeyArray[randIndex];
@@ -76,6 +95,7 @@ void KeyObject::onKeyPressed() {
 }
 
 void KeyObject::onKeyReleased() {
+  if (isString) return;
   // Appleロゴ(0x00)は Shift+Alt+'k'をリリース
   if (activeKey == 0x00) {
     Keyboard.release(KEY_LEFT_SHIFT);
@@ -116,6 +136,12 @@ void KeyManager::setRandomKeys(int index, keyCode codes[], int count) {
   }
 }
 
+void KeyManager::setStringMapping(int index, const char* s) {
+  if (index >= 0 && index < size) {
+    keys[index].setStringMapping(s);
+  }
+}
+
 void KeyManager::update() {
   for (int i = 0; i < size; i++) {
     keys[i].update();
@@ -127,4 +153,25 @@ keyCode KeyManager::getKey(int index) const {
     return keys[index].getAssignedKey();
   }
   return 0;
+}
+
+// 追加: 文字列マッピング取得
+
+const char* KeyObject::getStringMapping() const {
+  return strMapping;
+}
+
+const char* KeyManager::getStringMapping(int index) const {
+  if (index >= 0 && index < size && keys[index].isStringMappingEnabled()) {
+    return keys[index].getStringMapping();
+  }
+  return "";
+}
+
+// 追加: 文字列モードか判定
+bool KeyManager::isStringMappingEnabled(int index) const {
+  if (index >= 0 && index < size) {
+    return keys[index].isStringMappingEnabled();
+  }
+  return false;
 }
