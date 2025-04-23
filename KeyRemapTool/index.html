@@ -16,6 +16,10 @@
              /* increase vertical size by 1.2x */ }
     button:disabled { background: #DDD; cursor: not-allowed; }
     select { padding: 0.5em; border-radius: 0.3em; border: 1px solid #ccc; }
+    /* 数字ラベルを非表示にし、ドロップダウンのみ表示 */
+    .key label { display: none; }
+    /* セレクトボックスを枠の80%にする */
+    .key select { width: 80%; height: 80%; margin-top: -10px;}
     /* Container for key rows (frame) */
     #layout {
       display: flex;
@@ -28,7 +32,7 @@
       border-radius: 0.5em;
       background: #FFF;
       /* fixed width: 5 keys + 4 gaps */
-      width: calc(5 * var(--key-size) + 4 * var(--gap));
+      width: calc(5 * var(--key-size) + 4.8 * var(--gap));
     }
     .row {
       display: flex;
