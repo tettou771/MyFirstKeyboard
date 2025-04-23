@@ -1,37 +1,44 @@
 # MyFirstKeyboard
 
-このリポジトリは、MyFirstKeyboard専用PCB向けのファームウェアです。
+**Author**: tettou771
 
-## 説明
+## 概要
 
-- このファームウェアは、MyFirstKeyboard基板を使って動作するカスタムキーボード用。
-- キースイッチは7つで、ピンは A7, A6, A1, A9, A10, A8, A2 に接続。
-- チャタリング抑止のためのデバウンス処理や、pressed/releasedのキーイベント処理を実装。
+MyFirstKeyboard専用PCB（MFKB基板）向けのカスタムキーボードファームウェアと、Webベースのキーリマップツールを提供します。
 
-## 書き込み方法
+### ファームウェア
+- Seeeduino XIAO（M0搭載）用スケッチ
+- 7キーのスイッチをDebounce処理付きで読み取り
+- USB HIDキーボードとしてキー押下／リリースを送信
+- シリアルコマンドでキー設定をフラッシュ保存
 
-1. Arduino IDEで「Seeeduino XIAO」を選択。（必要ならボードマネージャから追加してください）
-2. このリポジトリをクローンまたはダウンロードして、Arduino IDEでMyFirstKeyboard.inoを開く。
-3. MyFirstKeyboard専用PCBを接続し、ボードマネージャで Seeeduino XIAO を選択してスケッチをアップロード。
+### キーリマップツール (KeyRemapTool)
+- `KeyRemapTool/index.html` をChromeやEdgeなどのWeb Serial API対応ブラウザで開くだけ
+- サーバ起動などは不要です
 
-## TODO
+## ボードマネージャの追加
 
-- シリアルコマンドでキーの設定変更
+Arduino IDEでSeeeduino XIAOを使うには、環境設定の「追加のボードマネージャのURL」に以下を追加してください：
 
-## Key Remap Tool (ブラウザUI)
-`KeyRemapTool` フォルダに、Web Serial API を使ったキーリマップ用のブラウザツールを同梱しています。
-- 必要条件: Web Serial API 対応ブラウザ（Chrome, Edge 等）
-- サーバ起動例:
-  ```bash
-  cd KeyRemapTool
-  python3 -m http.server 8000
-  ```
-- ブラウザで `http://localhost:8000` を開き、以下を操作します。
-  1. [Connect] ボタンで XIAO と接続
-  2. [Refresh] ボタンで現在のマッピングを取得
-  3. ドロップダウンから各キーを選択（`Random` でランダムモード）
-  4. [Apply] ボタンで設定を送信・フラッシュに保存
+```
+https://files.seeedstudio.com/arduino/package_seeeduino_boards_index.json
+```
+
+## ファームウェア書き込み方法
+1. Arduino IDEを起動し、環境設定でボードマネージャURLを追加
+2. 「ツール」→「ボード」→「ボードマネージャ」を開き、Seeeduino XIAOをインストール
+3. 本リポジトリをクローンまたはダウンロード
+4. Arduino IDEで `MyFirstKeyboard.ino` を開く
+5. MFKB基板をUSB接続し、「ツール」→「ボード」でSeeeduino XIAO、「ツール」→「ポート」で該当ポートを選択
+6. 「スケッチ」→「アップロード」で書き込み
+
+## Key Remap Toolの使い方
+1. `KeyRemapTool/index.html` を対応ブラウザで開く
+2. [Connect] を押してデバイスと接続
+3. [Refresh] で現在のマッピングを取得
+4. ドロップダウンやStr入力欄でキーを設定
+5. [Apply] を押して設定を送信＆フラッシュ保存
 
 ## ライセンス
 
-MIT
+MIT License
