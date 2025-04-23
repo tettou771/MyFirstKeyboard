@@ -82,13 +82,23 @@ void KeyObject::onKeyPressed() {
   } else {
     activeKey = assignedKey;
   }
+  // モディファイアキー (0xE0=Ctrl, 0xE1=Shift, 0xE2=Alt, 0xE3=GUI)
+  if (activeKey == 0xE0) {
+    Keyboard.press(KEY_LEFT_CTRL);
+  } else if (activeKey == 0xE1) {
+    Keyboard.press(KEY_LEFT_SHIFT);
+  } else if (activeKey == 0xE2) {
+    Keyboard.press(KEY_LEFT_ALT);
+  } else if (activeKey == 0xE3) {
+    Keyboard.press(KEY_LEFT_GUI);
+  }
   // Appleロゴ(0x00)用の特殊処理: Shift+Alt+'k'
-  if (activeKey == 0x00) {
+  else if (activeKey == 0x00) {
     Keyboard.press(KEY_LEFT_SHIFT);
     Keyboard.press(KEY_LEFT_ALT);
     Keyboard.press('k');
   }
-  // 通常キー(1バイト)は press/release
+  // 通常キー(1バイト)は press
   else if (activeKey <= 0xFF) {
     Keyboard.press((uint8_t)activeKey);
   }
@@ -96,8 +106,18 @@ void KeyObject::onKeyPressed() {
 
 void KeyObject::onKeyReleased() {
   if (isString) return;
+  // モディファイアキーのリリース
+  if (activeKey == 0xE0) {
+    Keyboard.release(KEY_LEFT_CTRL);
+  } else if (activeKey == 0xE1) {
+    Keyboard.release(KEY_LEFT_SHIFT);
+  } else if (activeKey == 0xE2) {
+    Keyboard.release(KEY_LEFT_ALT);
+  } else if (activeKey == 0xE3) {
+    Keyboard.release(KEY_LEFT_GUI);
+  }
   // Appleロゴ(0x00)は Shift+Alt+'k'をリリース
-  if (activeKey == 0x00) {
+  else if (activeKey == 0x00) {
     Keyboard.release(KEY_LEFT_SHIFT);
     Keyboard.release(KEY_LEFT_ALT);
     Keyboard.release('k');

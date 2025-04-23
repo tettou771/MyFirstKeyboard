@@ -24,6 +24,9 @@ let currentMapping = {};
 
 // Connect to the serial device
 async function connectDevice() {
+  // エラー表示エリアをクリア
+  const errDiv = document.getElementById('error');
+  if (errDiv) errDiv.textContent = '';
   try {
     port = await navigator.serial.requestPort();
     await port.open({ baudRate: 115200 });
@@ -36,6 +39,7 @@ async function connectDevice() {
     await refreshMapping();
   } catch (err) {
     console.error(err);
+    if (errDiv) errDiv.textContent = '接続エラー: ' + (err.message || err);
   }
 }
 
